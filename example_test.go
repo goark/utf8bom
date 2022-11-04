@@ -9,14 +9,19 @@ import (
 )
 
 func ExampleReader() {
-	file, err := os.Open("testdata/sample.txt")
+	rc, err := func(path string) (io.ReadCloser, error) {
+		file, err := os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		return utf8bom.Strip(file), nil
+	}("testdata/sample.txt")
 	if err != nil {
 		return
 	}
-	r := utf8bom.Strip(file)
-	defer r.Close()
+	defer rc.Close()
 
-	b, err := io.ReadAll(r)
+	b, err := io.ReadAll(rc)
 	if err != nil {
 		return
 	}
